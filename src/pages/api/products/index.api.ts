@@ -1,17 +1,6 @@
 // // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 
-// type Data = {
-//   name: string;
-// };
-
-// export default function handler(
-//   req: NextApiRequest,
-//   res: NextApiResponse<Data>,
-// ) {
-//   res.status(200).json({ name: "Fernando Mendes" });
-// }
-
 import { prisma } from "@/lib/prisma";
 
 export default async function handler(req: NextApiRequest, res:NextApiResponse) {
@@ -50,6 +39,10 @@ export default async function handler(req: NextApiRequest, res:NextApiResponse) 
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+
+    if (error instanceof Error) {
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(500).json({ error: "An unknown error occurred" });
   }
 }
