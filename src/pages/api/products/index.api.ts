@@ -12,11 +12,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 //   res.status(200).json({ name: "Fernando Mendes" });
 // }
 
-
-// import { PrismaClient } from '@prisma/client';
-
-// const prisma = new PrismaClient();
-
 import { prisma } from "@/lib/prisma";
 
 export default async function handler(req: NextApiRequest, res:NextApiResponse) {
@@ -33,6 +28,22 @@ export default async function handler(req: NextApiRequest, res:NextApiResponse) 
           data: req.body,
         });
         return res.status(201).json(newProduct);
+
+        case 'PUT':
+          const { id, ...data } = req.body;
+          const updatedProduct = await prisma.product.update({
+            where: { id: id },
+            data,
+          });
+          return res.status(200).json(updatedProduct);
+  
+        case 'DELETE':
+          const { productId } = req.body;
+          await prisma.product.update({
+            where: { id: productId },
+            data: { isActive: false },
+          });
+          return res.status(200).json({ message: 'The product was deleted' });
 
       default:
         res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
