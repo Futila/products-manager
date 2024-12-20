@@ -1,10 +1,7 @@
 import { StoreProductDialog } from "@/components/store-product-dialog";
 import { useEffect, useState } from "react";
 
-
-
-
-interface Product {
+export interface Product {
   id: string, 
   code: string, 
   description: string, 
@@ -29,7 +26,7 @@ const ProductsPage = () => {
   }, [filters, page]);
 
 
-  const handleProductAdded = (newProduct) => {
+  const handleProductAdded = (newProduct: Product) => {
     setProducts([...products, newProduct]);
   };
 
@@ -50,9 +47,6 @@ const ProductsPage = () => {
       <h1 className="text-2xl font-bold mb-4">Produtos</h1>
       <div className="mb-4 flex justify-between">
         <StoreProductDialog onProductAdded={handleProductAdded}/>
-        {/* <Button  className="bg-blue-500 text-white px-4 py-2 rounded">
-          Adicionar Produto
-        </Button> */}
         <select
           className="border rounded px-2 py-1"
           value={filters.active ? "ativos" : "inativos"}

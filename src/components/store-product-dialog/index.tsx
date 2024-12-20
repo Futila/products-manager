@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import {ChangeEvent, FormEvent, useState } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -10,8 +10,16 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import { Product } from "@/pages/products.page";
 
-export const StoreProductDialog = ({ onProductAdded }) => {
+
+interface StoreProductDialogprops {
+  onProductAdded: (newProduct: Product ) => void;
+}
+
+export const StoreProductDialog = ({ onProductAdded }: StoreProductDialogprops) => {
+  
+  
   const [productData, setProductData] = useState({
     code: "",
     description: "",
@@ -24,7 +32,7 @@ export const StoreProductDialog = ({ onProductAdded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setProductData({
       ...productData,
@@ -32,7 +40,7 @@ export const StoreProductDialog = ({ onProductAdded }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -66,7 +74,7 @@ export const StoreProductDialog = ({ onProductAdded }) => {
         inStock: false,
       });
     } catch (err) {
-      setError(err.message || "Erro inesperado.");
+      setError(err instanceof Error ? err.message : "Erro inesperado.");
     } finally {
       setLoading(false);
     }
