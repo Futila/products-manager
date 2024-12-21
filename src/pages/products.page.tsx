@@ -85,9 +85,11 @@ const ProductsPage = () => {
                     prevProducts.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
                   );}}  
                   />
-                <button  className="text-red-500 ml-2">
+                {product.isActive && 
+                (<button  className="text-red-500 ml-2">
                   <Trash2/>
-                </button>
+                </button>)
+                }
               </td>
             </tr>
           ))}
