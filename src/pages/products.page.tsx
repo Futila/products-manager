@@ -1,4 +1,6 @@
-import { StoreProductDialog } from "@/components/store-product-dialog";
+import { ProductStatus } from "@/components/product-status";
+import { StoreProductDialog2 } from "@/components/store-product-dialog";
+import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export interface Product {
@@ -6,7 +8,10 @@ export interface Product {
   code: string, 
   description: string, 
   sale_price: number, 
-  inStock: boolean
+  inStock: boolean, 
+  reference: string, 
+  cost_price: number, 
+  isActive: boolean
 }
 
 const ProductsPage = () => {
@@ -25,19 +30,6 @@ const ProductsPage = () => {
     fetchProducts();
   }, [filters, page]);
 
-
-  const handleProductAdded = (newProduct: Product) => {
-    setProducts([...products, newProduct]);
-  };
-
-  // const handleAddProduct = () => {
-  //   // Abrir modal/formulário para adicionar produto
-  // };
-
-  // const handleEditProduct = (id: string) => {
-  //   // Abrir modal/formulário para editar produto
-  // };
-
   // const handleDeleteProduct = (id: string) => {
   //   // Fazer requisição para excluir produto
   // };
@@ -46,7 +38,13 @@ const ProductsPage = () => {
     <div className="sm:ml-14 p-4">
       <h1 className="text-2xl font-bold mb-4">Produtos</h1>
       <div className="mb-4 flex justify-between">
-        <StoreProductDialog onProductAdded={handleProductAdded}/>
+        {/* <StoreProductDialog onProductAdded={handleProductAdded}/> */}
+        <StoreProductDialog2
+          action="add"
+          onProductSaved={(updatedProduct) => {
+          setProducts([...products, updatedProduct]);
+        }}
+    />
         <select
           className="border rounded px-2 py-1"
           value={filters.active ? "ativos" : "inativos"}
@@ -63,6 +61,7 @@ const ProductsPage = () => {
             <th className="border border-gray-300 px-4 py-2">Descrição</th>
             <th className="border border-gray-300 px-4 py-2">Valor</th>
             <th className="border border-gray-300 px-4 py-2">Estoque</th>
+            <th className="border border-gray-300 px-4 py-2">Estado</th>
             <th className="border border-gray-300 px-4 py-2">Ações</th>
           </tr>
         </thead>
@@ -74,11 +73,20 @@ const ProductsPage = () => {
               <td className="border border-gray-300 px-4 py-2">R$ {product.sale_price.toFixed(2)}</td>
               <td className="border border-gray-300 px-4 py-2">{product.inStock ? "Sim" : "Não"}</td>
               <td className="border border-gray-300 px-4 py-2">
-                <button className="text-blue-500 mr-2">
-                  Editar
-                </button>
-                <button  className="text-red-500">
-                  Excluir
+                {product.isActive ? <ProductStatus status="active"/> : <ProductStatus status="inactive"/>}
+                </td>
+              <td className="border border-gray-300 px-4 py-2">
+              
+                <StoreProductDialog2 
+                product={product}    
+                onProductSaved={(updatedProduct) => {
+                  // Atualize a lista de produtos
+                  setProducts((prevProducts) =>
+                    prevProducts.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+                  );}}  
+                  />
+                <button  className="text-red-500 ml-2">
+                  <Trash2/>
                 </button>
               </td>
             </tr>

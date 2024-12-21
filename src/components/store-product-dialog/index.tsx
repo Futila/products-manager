@@ -1,95 +1,126 @@
-
-import {ChangeEvent, FormEvent, useState } from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "../ui/button";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Product } from "@/pages/products.page";
+
+import { Button } from "../ui/button";
 
 
-interface StoreProductDialogprops {
-  onProductAdded: (newProduct: Product ) => void;
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogFooter } from "../ui/dialog";
+import { Pencil } from "lucide-react";
+
+
+
+type ProductType = {
+  id: string, 
+  code: string, 
+  description: string, 
+  reference: string, 
+  cost_price: number, 
+  sale_price: number, 
+  inStock: boolean, 
+  isActive: boolean
 }
 
-export const StoreProductDialog = ({ onProductAdded }: StoreProductDialogprops) => {
-  
-  
+
+interface StoreProductDialogProps  {
+  onProductSaved: (product: ProductType) => void;
+  product?: ProductType // The product to be updated (optional)
+  action?: "add" | "edit"
+}
+
+
+export function StoreProductDialog2 ({onProductSaved, product, action}: StoreProductDialogProps) {
+
   const [productData, setProductData] = useState({
-    code: "",
-    description: "",
-    reference: "",
-    cost_price: "",
-    sale_price: "",
+    code: "", 
+    description: "", 
+    reference: "", 
+    cost_price: "", 
+    sale_price: "", 
     inStock: false,
-  });
+  })
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+
+  //fill the product datas when opening to edit 
+  useEffect(() => {
+
+    if(product) {
+      setProductData({
+        code: product.code, 
+        description: product.description, 
+        reference: product.reference, 
+        cost_price: product.cost_price.toString(),
+        sale_price: product.sale_price.toString(),
+        inStock: product.inStock
+      })
+    }
+  }, [product])
+
+
+  function handleChange (e: ChangeEvent<HTMLInputElement>){
+    const {name, value, type, checked} = e.target
+
     setProductData({
-      ...productData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+      ...productData, 
+      [name]: type === "checkbox" ? checked : value
+    })
+  }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+
     try {
-      const response = await fetch("/api/products", {
-        method: "POST",
+      const response = await fetch(`/api/products${product ? `/${product.id}`: ""}`, {
+        method: product ? "PUT": "POST", // PUT to edit and POST do add a new product
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...productData, 
-          cost_price: Number(productData.cost_price), 
-          sale_price: Number(productData.cost_price), 
-        }),
-      });
+          cost_price: Number(productData.cost_price),
+          sale_price: Number(productData.sale_price),
+        })
+      })
 
-      if (!response.ok) {
-        throw new Error("Erro ao salvar o produto.");
+      if(!response.ok) {
+        throw new Error(product ? "Erro ao editar o produto." : "Erro ao adicionar o produto.")
       }
 
-      toast.success("Produto adicionado com sucesso!")
+    const savedProduct = await response.json()
+    onProductSaved(savedProduct)
+    
+    toast.success(product ? "Produto editado com sucesso!" : "Produto adicionado com sucesso!");
 
-      const newProduct = await response.json();
-      onProductAdded(newProduct); // Atualiza a lista de produtos no componente pai
       setProductData({
         code: "",
         description: "",
         reference: "",
-        cost_price:"",
-        sale_price:"",
+        cost_price: "",
+        sale_price: "",
         inStock: false,
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro inesperado.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    }catch(err){
+      setError((err as Error).message || "Erro inesperado.");
+    }finally {
+      setLoading(false)
 
+    }
+  }
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className=" text-white px-4 py-2 rounded">
-          Adicionar Produto
-        </Button>
+       {action && action === "add" ? ( <Button className="text-white px-4 py-2 rounded">
+          {"Adicionar Produto"}
+        </Button>): (<button><Pencil className="w-4 h-4"/></button>)}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Produto</DialogTitle>
+          <DialogTitle>{product ? "Editar Produto" : "Adicionar Novo Produto"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-red-500">{error}</p>}
@@ -181,13 +212,13 @@ export const StoreProductDialog = ({ onProductAdded }: StoreProductDialogprops) 
               disabled={loading}
               className="bg-green-500 text-white px-4 py-2 rounded"
             >
-              {loading ? "Salvando..." : "Salvar"}
+              {loading ? (product ? "Salvando..." : "Adicionando...") : product ? "Salvar Alterações" : "Adicionar"}
             </button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+
   );
-};
-
-
+   
+}
