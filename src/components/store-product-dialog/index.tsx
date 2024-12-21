@@ -28,7 +28,7 @@ interface StoreProductDialogProps  {
 }
 
 
-export function StoreProductDialog2 ({onProductSaved, product, action}: StoreProductDialogProps) {
+export function StoreProductDialog ({onProductSaved, product, action}: StoreProductDialogProps) {
 
   const [productData, setProductData] = useState({
     code: "", 

@@ -1,7 +1,8 @@
 import { ProductStatus } from "@/components/product-status";
-import { StoreProductDialog2 } from "@/components/store-product-dialog";
+import { StoreProductDialog } from "@/components/store-product-dialog";
 import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export interface Product {
   id: string, 
@@ -30,16 +31,32 @@ const ProductsPage = () => {
     fetchProducts();
   }, [filters, page]);
 
-  // const handleDeleteProduct = (id: string) => {
-  //   // Fazer requisição para excluir produto
-  // };
+ 
+  async function handleDeleteProduct(productId: string) {
+    const confirmed = window.confirm("Tem certeza que desejar excluir este produto ?")
+    if(!confirmed) return;
+
+    try {
+      await fetch(`api/products/${productId}`, {
+        method: "DELETE"
+      })
+
+      toast.success("Produto excluído com sucesso!")
+
+      setProducts((prevProducts) => 
+        prevProducts.map((product) => product.id === productId ? {...product, isActive: false}: product)
+      )
+
+    }catch (error) {
+      toast.error("Erro ao excluir produto")
+    }
+  }
 
   return (
     <div className="sm:ml-14 p-4">
       <h1 className="text-2xl font-bold mb-4">Produtos</h1>
       <div className="mb-4 flex justify-between">
-        {/* <StoreProductDialog onProductAdded={handleProductAdded}/> */}
-        <StoreProductDialog2
+        <StoreProductDialog
           action="add"
           onProductSaved={(updatedProduct) => {
           setProducts([...products, updatedProduct]);
@@ -77,16 +94,17 @@ const ProductsPage = () => {
                 </td>
               <td className="border border-gray-300 px-4 py-2">
               
-                <StoreProductDialog2 
-                product={product}    
-                onProductSaved={(updatedProduct) => {
+                <StoreProductDialog
+                  action="edit" 
+                  product={product}    
+                  onProductSaved={(updatedProduct) => {
                   // Atualize a lista de produtos
-                  setProducts((prevProducts) =>
+                    setProducts((prevProducts) =>
                     prevProducts.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
                   );}}  
                   />
                 {product.isActive && 
-                (<button  className="text-red-500 ml-2">
+                (<button onClick={() => handleDeleteProduct(product.id)}  className="text-red-500 ml-2">
                   <Trash2/>
                 </button>)
                 }
